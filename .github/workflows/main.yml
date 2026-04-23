@@ -1,0 +1,39 @@
+
+name: Snowflake Connection Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  snowflake-connection:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install SnowSQL
+        run: |
+          curl -O https://snowflakecomputing.com
+          bash snowsql-1.2.27-linux_x86_64.bash
+          echo "$HOME/bin" >> $GITHUB_PATH
+
+      - name: Test Snowflake Connection
+        env:
+          SNOWFLAKE_ACCOUNT: ${{ secrets.SNOWFLAKE_ACCOUNT }}
+          SNOWFLAKE_USER: ${{ secrets.SNOWFLAKE_USER }}
+          SNOWFLAKE_PASSWORD: ${{ secrets.SNOWFLAKE_PASSWORD }}
+          SNOWFLAKE_ROLE: ${{ secrets.SNOWFLAKE_ROLE }}
+          SNOWFLAKE_WAREHOUSE: ${{ secrets.SNOWFLAKE_WAREHOUSE }}
+          SNOWFLAKE_DATABASE: ${{ secrets.SNOWFLAKE_DATABASE }}
+      run: |
+        echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
+        python --version
+        echo "Step 1: Installing schemachange"
+        pip install schemachange
+
+        echo "Step 2: Running schemachange"
+        schemachange -f $GITHUB_WORKSPACE/scripts -a $SF_ACCOUNT -u $SF_USERNAME -r $SF_ROLE -w $SF_WAREHOUSE -d $SF_DATABASE -c $SF_DATABASE.SCHEMACHANGE.CHANGE_HISTORY --create-change-history-table
