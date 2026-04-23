@@ -1,34 +1,23 @@
+deploy-snowflake-changes-job:
+  runs-on: ubuntu-latest
 
-name: Snowflake Connection Test
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
 
-on:
-  workflow_dispatch:
-  push:
-    branches:
-      - main
+    - name: Use Python 3.8.x
+      uses: actions/setup-python@v2.2.1
+      with:
+        python-version: 3.8.x
 
-jobs:
-  snowflake-connection:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Install SnowSQL
-        run: |
-          curl -O https://snowflakecomputing.com
-          bash snowsql-1.2.27-linux_x86_64.bash
-          echo "$HOME/bin" >> $GITHUB_PATH
-
-      - name: Test Snowflake Connection
-        env:
-          SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
-          SF_USERNAME: ${{ secrets.SF_USERNAME }}
-          SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD }}
-          SF_ROLE: ${{ secrets.SF_ROLE }}
-          SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
-          SF_DATABASE: ${{ secrets.SF_DATABASE }}
+    - name: Run schemachange
+      env:
+        SF_ACCOUNT: ${{ secrets.SF_ACCOUNT }}
+        SF_USERNAME: ${{ secrets.SF_USERNAME }}
+        SF_ROLE: ${{ secrets.SF_ROLE }}
+        SF_WAREHOUSE: ${{ secrets.SF_WAREHOUSE }}
+        SF_DATABASE: ${{ secrets.SF_DATABASE }}
+        SNOWFLAKE_PASSWORD: ${{ secrets.SF_PASSWORD }}
       run: |
         echo "GITHUB_WORKSPACE: $GITHUB_WORKSPACE"
         python --version
